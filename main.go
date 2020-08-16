@@ -1,11 +1,11 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 )
 
 type GetMeT struct {
@@ -81,12 +81,11 @@ const telegramToken = "1397587106:AAF8socYPHdzdwbe6FuYW0M0GZicYlyGkLg"
 
 const methodGetMe = "getMe"
 const methodGetUpdates = "getUpdates"
+const methodSendMessage = "sendMessage"
 
 func main() {
 
-	//fmt.Println(getUrlByMethod(methodGetMe))
-
-	body := getBodyByUrlAndData(getUrlByMethod(methodGetUpdates), []byte(""))
+	body := getBodyByUrlAndData(getUrlByMethod(methodGetUpdates))
 
 	//fmt.Printf("%s", body)
 
@@ -96,10 +95,16 @@ func main() {
 		fmt.Println(err.Error())
 	}
 
+	SendMessageUrl := getUrlByMethod(methodSendMessage)
 	for _, item := range getUpdates.Result {
-		fmt.Println(item.Message.Text)
-	}
+		if item.Message.Text == "Привет" {
+			chatId := strconv.Itoa(item.Message.Chat.ID)
+			targetUrl := SendMessageUrl + "?chat_id=" + chatId + "&text=Привет!"
+			body := getBodyByUrlAndData(targetUrl)
 
+			fmt.Println(string(body))
+		}
+	}
 	//fmt.Printf("%v", getUpdates)
 }
 
@@ -107,9 +112,8 @@ func getUrlByMethod(methodName string) string {
 	return telegramBaseUrl + telegramToken + "/" + methodName
 }
 
-func getBodyByUrlAndData(url string, data []byte) []byte {
-	r := bytes.NewReader(data)
-	response, err := http.Post(url, "application/json", r)
+func getBodyByUrlAndData(url string) []byte {
+	response, err := http.Get(url)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
