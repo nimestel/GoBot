@@ -1,25 +1,42 @@
 package main
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
-func main() {
-	var test bool
-
-	text := "Hello world!"
-	fmt.Println(text, test)
-	fmt.Println(text + "2")
-
-	text = text + "123"
-	fmt.Println(text)
-
-	result := isAllowedGroups(2, 10)
-	fmt.Println("isAllowedGroups", result)
+type GetMeT struct {
+	Ok     bool         `json:"ok"`
+	Result GetMeResultT `json:"result"`
 }
 
-func isAllowedGroups(groupCount int, subscriberCount int) bool {
-	residue := subscriberCount % groupCount
+type GetMeResultT struct {
+	Id        int    `json:"id"`
+	IsBot     bool   `json:"is_bot"`
+	FirstName string `json:"first_name"`
+	Username  string `json:"username"`
+}
 
-	fmt.Println(residue)
+func main() {
+	getMe := GetMeT{}
+	test := []byte(`{
+		"ok": true,
+		"result": {
+			"id": 1397587106,
+			"is_bot": true,
+			"first_name": "TestIntensiveGo",
+			"username": "Test123IntensiveGoBot",
+			"can_join_groups": true,
+			"can_read_all_group_messages": false,
+			"supports_inline_queries": false
+		}
+	}`)
 
-	return residue == 0
+	err := json.Unmarshal(test, &getMe)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	fmt.Printf("%v", getMe)
+	fmt.Println(getMe.Result.Username)
 }
