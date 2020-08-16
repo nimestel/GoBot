@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 )
 
 type GetMeT struct {
@@ -17,26 +20,42 @@ type GetMeResultT struct {
 	Username  string `json:"username"`
 }
 
-func main() {
-	getMe := GetMeT{}
-	test := []byte(`{
-		"ok": true,
-		"result": {
-			"id": 1397587106,
-			"is_bot": true,
-			"first_name": "TestIntensiveGo",
-			"username": "Test123IntensiveGoBot",
-			"can_join_groups": true,
-			"can_read_all_group_messages": false,
-			"supports_inline_queries": false
-		}
-	}`)
+const telegramBaseUrl = "https://api.telegram.org/bot"
+const telegramToken = "1397587106:AAF8socYPHdzdwbe6FuYW0M0GZicYlyGkLg"
 
-	err := json.Unmarshal(test, &getMe)
+const methodGetMe = "getMe"
+
+func main() {
+
+	fmt.Println(getUrlByMethod(methodGetMe))
+
+	body := getBodyByUrlAndData(getUrlByMethod(methodGetMe), []byte(""))
+	//fmt.Printf("%s", body)
+	getMe := GetMeT{}
+	err := json.Unmarshal(body, &getMe)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 
 	fmt.Printf("%v", getMe)
-	fmt.Println(getMe.Result.Username)
+}
+
+func getUrlByMethod(methodName string) string {
+	return telegramBaseUrl + telegramToken + "/" + methodName
+}
+
+func getBodyByUrlAndData(url string, data []byte) []byte {
+	r := bytes.NewReader(data)
+	response, err := http.Post(url, "application/json", r)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	defer response.Body.Close()
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	return body
 }
